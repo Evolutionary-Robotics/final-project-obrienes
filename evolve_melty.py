@@ -21,7 +21,7 @@ duration = 40000
 maxForce = 500             
 
 nnsize = 5
-sensor_inputs = 2
+sensor_inputs = 1
 motor_outputs = 2
 
 dt = 0.01
@@ -91,7 +91,7 @@ def fitnessFunction(genotype):
         direction = np.round(quat2euler(d.xmat[1]), decimals=4)[2]
         # print(direction/180)
         # print(forward/180 )
-        nn.step(dt,(forward/180,direction/180))
+        nn.step(dt,((forward - direction + 180 + 360) % 360 - 180))
         mujoco.mj_step(m, d)
         posx_past = posx_current
         posy_past = posy_current
