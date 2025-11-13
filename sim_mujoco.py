@@ -50,7 +50,7 @@ def controller(m, d):
     # print(d.xpos[1])
     forward = -90
     direction = np.round(quat2euler(d.xmat[1]), decimals=4)[2]
-    nn.step(dt,(forward/180,direction/180))
+    nn.step(dt,((forward - direction + 180 + 360) % 360 - 180))
     d.ctrl[0] = 20 * nn.out()[0] + 200
     d.ctrl[1] = 20 * nn.out()[1] - 200
     # print(d.ctrl[0])
