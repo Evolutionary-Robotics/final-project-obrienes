@@ -1,6 +1,7 @@
 import numpy as np
 import msvcrt
 import matplotlib.pyplot as plt
+import threading
 
 class Generational():
 
@@ -99,7 +100,7 @@ class Microbial():
 
     def __init__(self, fitnessFunction, popsize, genesize, recombProb, mutatProb, demeSize, generations):
         self.fitnessFunction = fitnessFunction
-        self.popsize = popsize
+        self.popsize = popsize + (popsize % 2)
         self.genesize = genesize
         self.recombProb = recombProb
         self.mutatProb = mutatProb
@@ -112,6 +113,8 @@ class Microbial():
         self.bestHistory = np.zeros(generations)
         self.bestFitness = -1000000000000
         self.gen = 0
+        self.threads = []
+        self.lock = threading.Lock()
 
     def showFitness(self):
         plt.plot(self.bestHistory[:self.gen+1])
@@ -134,6 +137,25 @@ class Microbial():
         self.avgHistory[self.gen]=avgfit
         self.bestHistory[self.gen]=bestfit
         return avgfit, bestfit, self.bestind
+    
+    def runThread(self, winner, loser, winnerGene, loserGene):
+        r = np.random.random(self.genesize)
+        newind = np.array([winnerGene[k] if r[k] >= self.recombProb else loserGene[k] for k in range(self.genesize)])
+        newind += np.random.normal(0.0,self.mutatProb,size=self.genesize)
+        newind = np.clip(self.pop[loser],-1,1)
+
+        winnerFit = self.fitnessFunction(winnerGene)
+        loserFit = self.fitnessFunction(newind)
+
+        self.lock.acquire()
+        print("lock")
+        self.fitness[winner] = winnerFit
+        self.fitness[loser] = loserFit
+        self.pop[loser] = newind
+        self.lock.release()
+        print("unlock")
+
+
 
     def run(self):
         # Calculate all fitness once
@@ -155,31 +177,48 @@ class Microbial():
             
             # for i in range(self.popsize):
             #     self.fitness[i] = self.fitnessFunction(self.pop[i])
-            for i in range(self.popsize):
+            np.random.shuffle(self.pop)
+            for i in range(0,self.popsize,2):
+                if (self.fitness[i] > self.fitness[i+1]):
+                    thread = threading.Thread(target=self.runThread, args=(i,i+1,self.pop[i],self.pop[i+1]))
+                    self.threads.append(thread)
+                    thread.start()
+                else:
+                    thread = threading.Thread(target=self.runThread, args=(i+1,i,self.pop[i+1],self.pop[i]))
+                    self.threads.append(thread)
+                    thread.start()
+                print("thread started")
+            print("wait")
+            for thread in self.threads:
+                thread.join()
+                print("thread finished")
+            self.threads = []
+            # for i in range(self.popsize):
                 # Step 1: Pick 2 individuals
-                a = i
-                deme_list = np.arange(a+self.popsize-self.demeSize,a+self.popsize+self.demeSize)
-                b = np.random.choice(np.delete(deme_list,np.where(deme_list == a+self.popsize)))%self.popsize   ### Restrict to demes
+                # a = i
+                # deme_list = np.arange(a+self.popsize-self.demeSize,a+self.popsize+self.demeSize)
+                # b = np.random.choice(np.delete(deme_list,np.where(deme_list == a+self.popsize)))%self.popsize   ### Restrict to demes
                 # print(f"{a}, {b}")
                 # while (a==b):   # Make sure they are two different individuals
                 #     b = np.random.randint(a-self.demeSize,a+self.demeSize)%self.popsize   ### Restrict to demes
                 # Step 2: Compare their fitness
-                if (self.fitness[a] > self.fitness[b]):
-                    winner = a
-                    loser = b
-                else:
-                    winner = b
-                    loser = a
+                
+                # if (self.fitness[a] > self.fitness[b]):
+                #     winner = a
+                #     loser = b
+                # else:
+                #     winner = b
+                #     loser = a
                 # Step 3: Transfect loser with winner 
-                r = np.random.random(self.genesize)
-                newind = np.array([self.pop[winner][k] if r[k] >= self.recombProb else self.pop[loser][k] for k in range(self.genesize)])
-                self.pop[loser] = newind
-                # Step 4: Mutate loser and make sure new organism stays within bounds
-                self.pop[loser] += np.random.normal(0.0,self.mutatProb,size=self.genesize)
-                self.pop[loser] = np.clip(self.pop[loser],-1,1)
-                # Step 5: Update fitness
-                # self.fitness[winner] = self.fitnessFunction(self.pop[winner])
-                self.fitness[loser] = self.fitnessFunction(self.pop[loser])
+                # r = np.random.random(self.genesize)
+                # newind = np.array([self.pop[winner][k] if r[k] >= self.recombProb else self.pop[loser][k] for k in range(self.genesize)])
+                # self.pop[loser] = newind
+                # # Step 4: Mutate loser and make sure new organism stays within bounds
+                # self.pop[loser] += np.random.normal(0.0,self.mutatProb,size=self.genesize)
+                # self.pop[loser] = np.clip(self.pop[loser],-1,1)
+                # # Step 5: Update fitness
+                # # self.fitness[winner] = self.fitnessFunction(self.pop[winner])
+                # self.fitness[loser] = self.fitnessFunction(self.pop[loser])
 
 
 class HillClimber():

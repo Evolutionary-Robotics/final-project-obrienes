@@ -48,20 +48,26 @@ def controller(m, d):
     # pass
     # print("controller")
     # print(d.xpos[1])
-    forward = -90
+    forward = 90
     direction = np.round(quat2euler(d.xmat[1]), decimals=4)[2]
-    nn.step(dt,((forward - direction + 180 + 360) % 360 - 180))
-    d.ctrl[0] = 20 * nn.out()[0] + 200
-    d.ctrl[1] = 20 * nn.out()[1] - 200
+
+    # nn.step(dt,np.array([((forward - direction + 180 + 360) % 360 - 180)/180]))
+    # d.ctrl[0] = 20 * nn.out()[0] + 200
+    # d.ctrl[1] = 20 * nn.out()[1] - 200
     # print(d.ctrl[0])
     # print(direction)
     # # print(d.xmat[1])
-    # if (direction > 87 and direction < 93):
-    #     d.ctrl[0] = 210
-    #     d.ctrl[1] = -190
-    # else:
-    #     d.ctrl[0] = 200
-    #     d.ctrl[1] = -200
+    if (abs(((forward - direction + 180 + 360) % 360 - 180))<10):
+        # print("yes")
+        d.ctrl[0] = 300
+        d.ctrl[1] = -100
+    else:
+        # print("no")
+        d.ctrl[0] = 200
+        d.ctrl[1] = -200
+
+    # d.ctrl[0] = 500
+    # d.ctrl[1] = -500
 
 glfw.init()
 window = glfw.create_window(1200, 900, "Demo", None, None)

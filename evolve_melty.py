@@ -48,13 +48,16 @@ def controller(m, d):
     # print(d.xpos[1])
     # print(direction)
     # print(d.xmat[1])
-    d.ctrl[0] = 20 * nn.out()[0] + 200
-    d.ctrl[1] = 20 * nn.out()[1] - 200
+    d.ctrl[0] = np.clip(100 * nn.out()[0] + 200,-300,300)
+    d.ctrl[1] = np.clip(100 * nn.out()[1] - 200,-300,300)
     # print(d.ctrl[0])
 
 nn = ctrnn.CTRNN(nnsize,sensor_inputs,motor_outputs)
 mujoco.set_mjcb_control(controller)
 
+
+# <velocity name="left-velocity" joint="left-wheel" kv="10000"/>
+# 		<velocity name="right-velocity" joint="right-wheel" kv="10000"/>
 
 
 
@@ -91,7 +94,7 @@ def fitnessFunction(genotype):
         direction = np.round(quat2euler(d.xmat[1]), decimals=4)[2]
         # print(direction/180)
         # print(forward/180 )
-        nn.step(dt,((forward - direction + 180 + 360) % 360 - 180))
+        nn.step(dt,np.array([((forward - direction + 180 + 360) % 360 - 180)/180]))
         mujoco.mj_step(m, d)
         posx_past = posx_current
         posy_past = posy_current
@@ -107,18 +110,23 @@ def fitnessFunction(genotype):
             distance_traveled -= np.dot(moved,moved)
 
     # Get final position 
-    # posx_end = d.xpos[1][0]
-    # posy_end = d.xpos[1][1]
-
-    # distance_final = np.sqrt((posx_start - posx_end)**2 + (posy_start - posy_end)**2)
-    return distance_traveled
+    posx_end = d.xpos[1][0]
+    posy_end = d.xpos[1][1]
+    distance_final = 0
+    moved = np.dot(np.array([posx_end,posy_end]), f_vec) * f_vec
+    # print(f"{np.arctan2(moved[0],moved[1])*180/np.pi}, {np.arctan2(f_vec[0],f_vec[1])*180/np.pi}")
+    if np.round(np.arctan2(moved[0],moved[1])*180/np.pi) == np.round(forward):
+        distance_final = 10*np.dot(moved,moved)
+    else:
+        distance_final = -10*np.dot(moved,moved)
+    return distance_traveled + distance_final
 
 # EA Params
-popsize = 20
+popsize = 4
 genesize = nnsize*nnsize + 2*nnsize + sensor_inputs*nnsize + motor_outputs*nnsize 
 recombProb = 0.5
-mutatProb = 0.01
-demeSize = 20
+mutatProb = 0.02
+demeSize = 10
 generations = 10000
 
 # Evolve and visualize fitness over generations
