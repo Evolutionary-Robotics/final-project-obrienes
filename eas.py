@@ -109,12 +109,20 @@ class Microbial():
         self.tournaments = generations*popsize
         self.pop = np.random.rand(popsize,genesize)*2 - 1
         self.fitness = np.zeros(popsize)
+        self.worstHistory = np.zeros(generations)
         self.avgHistory = np.zeros(generations)
         self.bestHistory = np.zeros(generations)
         self.bestFitness = -1000000000000
         self.gen = 0
         self.threads = []
         self.lock = threading.Lock()
+        plt.ion()
+        self.fig, self.ax = plt.subplots()
+        plt.legend()
+        self.bestLine, = self.ax.plot([], [],label ="best")
+        self.avgLine, = self.ax.plot([], [],label ="avg")
+        self.worstLine, = self.ax.plot([], [],label ="worst")
+        plt.show(block=False)
 
     def showFitness(self):
         plt.plot(self.bestHistory[:self.gen+1])
@@ -133,10 +141,22 @@ class Microbial():
             self.bestind = self.pop[np.argmax(self.fitness)]
         bestfit = np.max(self.fitness)
         avgfit = np.mean(self.fitness)
-
         print(self.gen,": ",np.min(self.fitness)," ",avgfit," ",bestfit)
         self.avgHistory[self.gen]=avgfit
         self.bestHistory[self.gen]=bestfit
+        x_data = np.arange(self.gen+1)
+        self.bestLine.set_xdata(x_data)
+        self.avgLine.set_xdata(x_data)
+        self.worstLine.set_xdata(x_data)
+
+        self.bestLine.set_ydata(self.bestHistory[:self.gen+1])
+        self.avgLine.set_ydata(self.avgHistory[:self.gen+1])
+        self.worstLine.set_ydata(self.worstHistory[:self.gen+1])
+
+        self.ax.relim()
+        self.ax.autoscale_view(True, True, True)
+        self.fig.canvas.draw()
+        self.fig.canvas.flush_events()
         return avgfit, bestfit, self.bestind
     
     def runThread(self, winner, loser, winnerGene, loserGene):
@@ -171,6 +191,8 @@ class Microbial():
             if msvcrt.kbhit():
                 key = msvcrt.getch().decode('utf-8')
                 if key == ' ':
+                    plt.ioff()
+                    plt.show()
                     break
                 if key == 's':
                     np.save("generation" + str(self.gen) + ".npy",c)
@@ -220,9 +242,9 @@ class Microbial():
                 self.pop[loser] += np.random.normal(0.0,self.mutatProb,size=self.genesize)
                 self.pop[loser] = np.clip(self.pop[loser],-1,1)
 
-                print(f"running sim {i*2} {' ' * 20}", end='\r')
-                self.fitness[winner] = self.fitnessFunction(self.pop[winner])
-                print(f"running sim {i*2 +1} {' ' * 20}", end='\r')
+                # print(f"running sim {i*2} {' ' * 20}", end='\r')
+                # self.fitness[winner] = self.fitnessFunction(self.pop[winner])
+                print(f"running sim {i} {' ' * 20}", end='\r')
                 self.fitness[loser] = self.fitnessFunction(self.pop[loser])
                 
 
