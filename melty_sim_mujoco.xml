@@ -1,28 +1,44 @@
 <mujoco>
-	<option gravity="0 0 -59.81" timestep="0.0005"/>
-	<size memory="8G"/>
+	<option gravity="0 0 -9.81" timestep="0.0005"/>
+	<!-- <size memory="G"/> -->
+	<asset>
+    	<texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1=".1 .2 .3" rgb2=".2 .3 .4"/>
+    	<material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance=".2"/>
+    </asset>
+	<!-- <default> 
+		<joint actuatorfrcrange="-1000000000 1000000000"/> 
+	</default> -->
 	<worldbody>
         <light diffuse=".5 .5 .5" pos="0 0 3" dir="0 0 -1"/>
-		<geom type="plane" size="100 100 0.1" rgba=".9 .9 .9 1"  />
-		<body name = "chassis" pos="0 0 4" euler='0 0 0'>
-			<joint type="free"/>
-			<geom type="cylinder" size="5 0.5" rgba=".9 .9 0 1"/>
+		<geom type="plane" size="500 500 0.1" material="grid" solref="0.01 1" solimp="0.9 0.95 0.001 0.5"/>
+		<body name = "chassis" pos="0 0 1" euler='0 0 0'>
+			<!-- <joint type="free" damping="100"/> -->
+			<joint type="slide" axis="1 0 0"/>
+			<joint type="slide" axis="0 1 0"/>
+			<joint type="hinge" axis="1 0 0"/>
+			<!-- <joint type="hinge" axis="0 1 0"/> -->
+			<joint type="hinge" axis="0 0 1"/>
+			<geom type="cylinder" size="5 0.5" rgba=".9 .9 0 1" friction="0 0 0" density="100"/>
 			<site name="marker" pos = "0 0 0" size="0.1" />
 			<body name="left-tire" pos="0 -4 0" euler='90 0 0'>
-				<joint name = "left-wheel" type="hinge" axis="0 0 -1" damping="0.01"/>
-				<geom type="cylinder" size="1 0.125" rgba="0 .9 0 1"/>
+				<joint name = "left-wheel" type="hinge" axis="0 0 -1" damping="10"/>
+				<geom type="cylinder" size="1 0.125" rgba="0 .9 0 1" friction="0 0 0.0001"/>
 			</body>
 			<body name="right-tire" pos="0 4 0" euler='90 0 0'>
-				<joint name = "right-wheel" type="hinge" axis="0 0 -1" damping="0.01"/>
-				<geom type="cylinder" size="1 0.125" rgba="0 .9 0 1"/>
+				<joint name = "right-wheel" type="hinge" axis="0 0 1" damping="10"/>
+				<geom type="cylinder" size="1 0.125" rgba="0 .9 0 1" friction="0 0 0.0001"/>
 			</body>
 		</body>
 	</worldbody>
 	<sensor>
 		<framepos objtype="site" objname="marker"/>
 	</sensor>
-	<actuator>
-		<velocity name="left-velocity" joint="left-wheel" kv="10000"/>
-		<velocity name="right-velocity" joint="right-wheel" kv="10000"/>
-	</actuator>
+	<!-- <actuator>
+		<motor name="left-velocity" joint="left-wheel" gear="10" ctrllimited="true" ctrlrange="-5000 5000"/>
+		<motor name="right-velocity" joint="right-wheel" gear="10" ctrllimited="true" ctrlrange="-5000 5000"/>
+		<intvelocity name="left-velocity" joint="left-wheel" kv="70000" ctrllimited="true" actrange="-10 10" ctrlrange="-100 100"/>
+		<intvelocity name="right-velocity" joint="right-wheel" kv="70000" ctrllimited="true" actrange="-10 10" ctrlrange="-100 100"/>
+	</actuator> -->
 </mujoco>
+
+

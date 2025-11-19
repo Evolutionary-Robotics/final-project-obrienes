@@ -53,20 +53,20 @@ class CTRNN():
 
     def initializeState(self,v):
         self.Voltage = v
-        self.Output = np.tanh(self.Voltage+self.Biases)
+        self.Output = sigmoid(self.Voltage+self.Biases)
 
     def initializeOutput(self,o):
         self.Output = o
-        self.Voltage = np.arctanh(o) - self.Biases
+        self.Voltage = inv_sigmoid(o) - self.Biases
 
     def step(self,dt,i):
         self.Input = np.dot(self.SensorWeights.T, i) ###
         netinput = self.Input + np.dot(self.Weights.T, self.Output)
         self.Voltage += dt * (self.invTimeConstants*(-self.Voltage+netinput))
-        self.Output = np.tanh(self.Voltage+self.Biases)
+        self.Output = sigmoid(self.Voltage+self.Biases)
 
     def out(self):
-        return np.tanh(np.dot(self.MotorWeights.T, self.Output))
+        return sigmoid(np.dot(self.MotorWeights.T, self.Output))
 
     def save(self, filename):
         np.savez(filename, size=self.Size, weights=self.Weights, sensorweights=self.SensorWeights, motorweights=self.MotorWeights, biases=self.Biases, timeconstants=self.TimeConstants)
