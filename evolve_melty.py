@@ -120,7 +120,7 @@ def fitnessFunction(genotype):
         moved = np.dot(np.array([posx_current-posx_past,posy_current-posy_past]), f_vec) * f_vec
         # print(f"{np.arctan2(moved[0],moved[1])*180/np.pi}, {np.arctan2(f_vec[0],f_vec[1])*180/np.pi}")
         if np.round(np.arctan2(moved[0],moved[1])*180/np.pi) == np.round(forward):
-            distance_traveled += 5*np.dot(moved,moved)
+            distance_traveled += 2*np.dot(moved,moved)
         distance_traveled += np.sqrt((posx_current - posx_past)**2 + (posy_current - posy_past)**2) / 2
         
 
@@ -128,12 +128,12 @@ def fitnessFunction(genotype):
     posx_end = d.xpos[1][0]
     posy_end = d.xpos[1][1]
     distance_final = 0
-    moved = np.dot(np.array([posx_end-posx_start,posy_end-posy_start]), f_vec) * f_vec
+    # moved = np.dot(np.array([posx_end-posx_start,posy_end-posy_start]), f_vec) * f_vec
     # print(f"{np.arctan2(moved[0],moved[1])*180/np.pi}, {np.arctan2(f_vec[0],f_vec[1])*180/np.pi}")
-    if np.round(np.arctan2(moved[0],moved[1])*180/np.pi) == np.round(forward):
-        distance_final = 10*np.dot(moved,moved)
-    else:
-        distance_final = -10*np.dot(moved,moved)
+    # if np.round(np.arctan2(moved[0],moved[1])*180/np.pi) == np.round(forward):
+    #     distance_final = 10*np.dot(moved,moved)
+    distance_final = 10*np.sqrt((posx_end - posx_start)**2 + (posy_end - posy_start)**2)
+    
     
     return distance_traveled + distance_final
 
