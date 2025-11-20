@@ -27,7 +27,7 @@ d = mujoco.MjData(m)
 print(d)
 cam = mujoco.MjvCamera()                        # Abstract camera
 opt = mujoco.MjvOption()
-genotype = np.load("bestgenotype339.npy")
+genotype = np.load("bestgenotype.npy")
 timestep = m.opt.timestep
 
 nn.setParameters(genotype,WeightRange,BiasRange,TimeConstMin,TimeConstMax)

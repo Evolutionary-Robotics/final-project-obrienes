@@ -121,9 +121,8 @@ def fitnessFunction(genotype):
         # print(f"{np.arctan2(moved[0],moved[1])*180/np.pi}, {np.arctan2(f_vec[0],f_vec[1])*180/np.pi}")
         if np.round(np.arctan2(moved[0],moved[1])*180/np.pi) == np.round(forward):
             distance_traveled += 5*np.dot(moved,moved)
-        distance_traveled += np.sqrt((posx_current - posx_past)**2 + (posy_current - posy_past)**2)
-        if abs(posx_current) < 2 and abs(posy_current) < 2:
-            distance_traveled = distance_traveled / 2
+        distance_traveled += np.sqrt((posx_current - posx_past)**2 + (posy_current - posy_past)**2) / 2
+        
 
     # Get final position 
     posx_end = d.xpos[1][0]
@@ -133,10 +132,13 @@ def fitnessFunction(genotype):
     # print(f"{np.arctan2(moved[0],moved[1])*180/np.pi}, {np.arctan2(f_vec[0],f_vec[1])*180/np.pi}")
     if np.round(np.arctan2(moved[0],moved[1])*180/np.pi) == np.round(forward):
         distance_final = 10*np.dot(moved,moved)
+    else:
+        distance_final = -10*np.dot(moved,moved)
+    
     return distance_traveled + distance_final
 
 # EA Params
-popsize = 4
+popsize = 10
 genesize = nnsize*nnsize + 2*nnsize + sensor_inputs*nnsize + motor_outputs*nnsize 
 recombProb = 0.5
 mutatProb = 0.2

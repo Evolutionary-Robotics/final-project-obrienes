@@ -242,9 +242,9 @@ class Microbial():
                 self.pop[loser] += np.random.normal(0.0,self.mutatProb,size=self.genesize)
                 self.pop[loser] = np.clip(self.pop[loser],-1,1)
 
-                # print(f"running sim {i*2} {' ' * 20}", end='\r')
-                # self.fitness[winner] = self.fitnessFunction(self.pop[winner])
-                print(f"running sim {i} {' ' * 20}", end='\r')
+                print(f"running sim {i*2} {' ' * 20}", end='\r')
+                self.fitness[winner] = self.fitnessFunction(self.pop[winner])
+                print(f"running sim {i*2 + 1} {' ' * 20}", end='\r')
                 self.fitness[loser] = self.fitnessFunction(self.pop[loser])
                 
 
